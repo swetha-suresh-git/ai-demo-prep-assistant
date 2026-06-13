@@ -1,45 +1,54 @@
 import streamlit as st
+import google.generativeai as genai
 
-st.set_page_config(page_title="AI Demo Prep Assistant")
+# Configure Gemini
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+model = genai.GenerativeModel("gemini-2.5-flash")
 
-st.title("🚀 AI Demo Prep Assistant")
+st.set_page_config(page_title="Freshdesk Demo Prep Assistant")
+
+st.title("🚀 Freshdesk Demo Prep Assistant")
 
 meeting_notes = st.text_area(
-    "Paste customer discovery notes here",
-    height=250
+    "Paste Discovery Notes",
+    height=300
 )
 
 if st.button("Generate Demo Prep"):
+
     if meeting_notes:
 
-        st.subheader("Demo Agenda")
-        st.write("""
-        - Introduction
-        - Customer Goals Review
-        - Product Demonstration
-        - Use Case Discussion
-        - Next Steps
-        """)
+        with st.spinner("Analyzing discovery notes..."):
 
-        st.subheader("Discovery Questions")
-        st.write("""
-        - What is your biggest challenge today?
-        - How are you solving this currently?
-        - What does success look like?
-        """)
+            prompt = f"""
+You are a Senior Solutions Engineer at Freshworks.
 
-        st.subheader("Follow-up Email")
-        st.write(f"""
-        Thank you for the discussion.
+Analyze the following discovery notes and prepare for a Freshdesk demo.
 
-        Based on our conversation, we reviewed:
-        {meeting_notes[:150]}...
+Discovery Notes:
+{meeting_notes}
 
-        Looking forward to our next discussion.
+Generate:
 
-        Best regards,
-        Swetha
-        """)
+1. Executive Summary
+2. Customer Challenges
+3. Business Goals
+4. Stakeholders Mentioned
+5. Demo Agenda tailored to this customer
+6. Freshdesk Features to Highlight
+7. Suggested Demo Flow
+8. Discovery Gaps / Follow-up Questions
+9. Potential Risks or Objections
+10. Follow-up Email
+
+Be specific to Freshdesk.
+Avoid generic recommendations.
+Format clearly using markdown.
+"""
+
+            response = model.generate_content(prompt)
+
+            st.markdown(response.text)
 
     else:
-        st.warning("Please enter meeting notes.")
+        st.warning("Please paste discovery notes.")
